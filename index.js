@@ -2,7 +2,7 @@
 
 const request = require('request');
 const TaskQueue = require('./taskQueue');
-let downloadQueue = new TaskQueue(3);
+let restRequestConcurrentQueue = new TaskQueue(3);
 
 function download(url, nesting, callback) {
   console.log(`Downloading ${url}`);
@@ -16,21 +16,21 @@ function download(url, nesting, callback) {
 }
 
 
-function spider(url, nesting, callback) {
-  let kev = ["http://www.google.com",
+function getDtpData(url, nesting, callback) {
+  let rest_urls = ["http://www.google.com",
     "https://www.google.com/calendar?tab=wc",
     "https://www.google.com",
     "http://www.google.com/finance?tab=we",
     "https://www.google.com/intl/en/about/products?tab=wh"];
   let completed = 0, hasErrors = false;
-  kev.forEach(link => {
-    downloadQueue.pushTask(done => {
+  rest_urls.forEach(link => {
+    restRequestConcurrentQueue.pushTask(done => {
       download(link, nesting - 1, err => {
         if(err) {
           hasErrors = true;
           return callback(err);
         }
-        if(++completed === kev.length && !hasErrors) {
+        if(++completed === rest_urls.length && !hasErrors) {
           callback();
         }
         done();
@@ -39,7 +39,7 @@ function spider(url, nesting, callback) {
   });
 }
 
-spider(process.argv[2], 3, (err) => {
+getDtpData(process.argv[2], 3, (err) => {
   if(err) {
     console.log(err);
     process.exit();
